@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:acute_test/components/company_rack.dart';  // Make sure this path matches your actual file structure
+import 'package:acute_test/network/api_handler.dart';
+import 'package:acute_test/components/company_rack.dart'; 
 
 class CouponsPage extends StatefulWidget {
   @override
@@ -7,45 +8,40 @@ class CouponsPage extends StatefulWidget {
 }
 
 class _CouponsPageState extends State<CouponsPage> {
-  final List<String> categories = ["All", "Food", "Travel", "Clothing", "Luxury"];
+  List<String> categories = ["All"];
+  List<Map<String, dynamic>> companyData = [];
+  String selectedCategory = "All";
 
-  final List<Map<String, dynamic>> companyData = [
-    {
-      'companyName': "McDonald's",
-      'companyLogoUrl': 'https://logo.clearbit.com/mcdonalds.com',
-      'offerTitle': 'Ramadan New Offers',
-      'offers': [
-        {
-          'imageUrl': 'https://via.placeholder.com/100',
-          'description': 'Grab your ticket for next purchase',
-          'couponDetails': '24 Coupons',
-        },
-        {
-          'imageUrl': 'https://via.placeholder.com/100',
-          'description': 'Grab your ticket for next purchase',
-          'couponDetails': '24 Coupons',
-        },
-      ],
-    },
-    {
-      'companyName': "Starbucks",
-      'companyLogoUrl': 'https://logo.clearbit.com/starbucks.com',
-      'offerTitle': 'Coffee for Couples',
-      'offers': [
-        {
-          'imageUrl': 'https://via.placeholder.com/100',
-          'description': 'Grab your ticket for next purchase',
-          'couponDetails': '10 Coupons',
-        },
-        {
-          'imageUrl': 'https://via.placeholder.com/100',
-          'description': 'Grab your ticket for next purchase',
-          'couponDetails': '10 Coupons',
-        },
-      ],
-    },
-    
-  ];
+  final String token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2MzBhNjlhNTg3ZWVjNDg3MWI3Mzk4NyIsImlhdCI6MTcxNDQ4MDI4NH0.9iVivjFzBB1CV_eGOD34apiS6zuLGHlVWaFjl50V5Nc';
+
+  @override
+  void initState() {
+    super.initState();
+    fetchCategories();
+    fetchLoyaltyCards();
+  }
+
+  void fetchCategories() async {
+    try {
+      final fetchedCategories = await ApiService.fetchCategories(token);
+      setState(() {
+        categories = ["All", ...fetchedCategories];
+      });
+    } catch (error) {
+      print("Failed to fetch categories: $error");
+    }
+  }
+
+  void fetchLoyaltyCards({String? category}) async {
+    try {
+      final fetchedLoyaltyCards = await ApiService.fetchLoyaltyCards(token, category: category);
+      setState(() {
+        companyData = fetchedLoyaltyCards;
+      });
+    } catch (error) {
+      print("Failed to fetch loyalty cards: $error");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -68,7 +64,13 @@ class _CouponsPageState extends State<CouponsPage> {
                     padding: const EdgeInsets.symmetric(horizontal: 4.0),
                     child: FilterChip(
                       label: Text(categories[index]),
-                      onSelected: (selected) {},
+                      selected: selectedCategory == categories[index],
+                      onSelected: (selected) {
+                        setState(() {
+                          selectedCategory = categories[index];
+                        });
+                        fetchLoyaltyCards(category: selectedCategory == "All" ? null : selectedCategory);
+                      },
                     ),
                   );
                 },
@@ -81,10 +83,16 @@ class _CouponsPageState extends State<CouponsPage> {
                 itemBuilder: (context, index) {
                   final data = companyData[index];
                   return CompanyRack(
-                    companyName: data['companyName'],
-                    companyLogoUrl: data['companyLogoUrl'],
-                    offerTitle: data['offerTitle'],
-                    offers: List<Map<String, String>>.from(data['offers']),
+                    companyName: data['brand'] ?? 'Unknown',
+                    companyLogoUrl: data['brand_logo'] ?? '',
+                    offerTitle: data['title'] ?? 'No Offer',
+                    offers: [
+                      {
+                        'imageUrl': data['image'] ?? '',
+                        'description': data['description'] ?? 'No Description',
+                        'couponDetails': data['title'] ?? 'No Details',
+                      }
+                    ],
                   );
                 },
               ),
