@@ -15,6 +15,7 @@ class ApiService {
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
+      print(data);
 
       if (data is Map && data['result'] is List) {
         return List<String>.from(data['result'].map((item) => item['title']));
@@ -26,7 +27,8 @@ class ApiService {
     }
   }
 
-  static Future<List<Map<String, dynamic>>> fetchLoyaltyCards(String token, {String? category}) async {
+  static Future<List<Map<String, dynamic>>> fetchLoyaltyCards(String token,
+      {String? category}) async {
     final url = Uri.parse('$baseUrl/loyalitycard');
     final response = await http.get(
       url,
@@ -45,6 +47,54 @@ class ApiService {
       }
     } else {
       throw Exception('Failed to load loyalty cards');
+    }
+  }
+
+  static Future<Map<String, dynamic>> checkOtp(
+    String token, {
+    required String loyaltyId,
+    required String otp,
+    String clientId = 'Test123',
+    Map<String, dynamic>? note,
+  }) async {
+    final url = Uri.parse('$baseUrl/redeemcard/otpCheck');
+    final response = await http.post(
+      url,
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        'loyalityId': loyaltyId,
+        'otp': otp,
+        'clientId': clientId,
+        'note': note ?? {},
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data; // Return the response data directly
+    } else {
+      throw Exception('Failed to redeem loyalty card');
+    }
+  }
+
+  static Future<Map<String, dynamic>> fetchLoyaltyCardData(
+      String token, String id) async {
+    final url = Uri.parse('$baseUrl/loyalitycard/$id');
+    final response = await http.get(
+      url,
+      headers: {
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data; // Return the response data directly
+    } else {
+      throw Exception('Failed to fetch loyalty card data');
     }
   }
 }

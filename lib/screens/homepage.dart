@@ -1,7 +1,7 @@
 import 'package:acute_test/components/card.dart';
 import 'package:acute_test/screens/couponpage.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+import 'package:acute_test/data/globals.dart' as globals;
 
 class Homepage extends StatefulWidget {
   @override
@@ -11,8 +11,22 @@ class Homepage extends StatefulWidget {
 }
 
 class homepagestate extends State<Homepage> {
+  int coins = globals.coins;
+
+  @override
+  void didUpdateWidget(covariant Homepage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (coins != globals.coins) {
+      setState(() {
+        coins = globals.coins;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    print(globals.coins);
+
     return Scaffold(
       body: SingleChildScrollView(
         child: Column(
@@ -43,7 +57,7 @@ class homepagestate extends State<Homepage> {
                       ),
                       SizedBox(height: 10),
                       Text(
-                        "Coins",
+                        "$coins Coins",
                         style: TextStyle(
                           fontSize: 20,
                           color: Colors.white,
@@ -101,8 +115,14 @@ class homepagestate extends State<Homepage> {
                           onPressed: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => CouponsPage()),
-                            );
+                              MaterialPageRoute(
+                                  builder: (context) => CouponsPage()),
+                            ).then((_) {
+                              // Ensure coins are updated after returning from CouponsPage
+                              setState(() {
+                                coins = globals.coins;
+                              });
+                            });
                           },
                         ),
                       ],
@@ -113,10 +133,9 @@ class homepagestate extends State<Homepage> {
                     child: ListView(
                       scrollDirection: Axis.horizontal,
                       children: [
-                      card(),
-                      card(),
-                      card(),
-                      
+                        card(),
+                        card(),
+                        card(),
                       ],
                     ),
                   ),
@@ -129,5 +148,3 @@ class homepagestate extends State<Homepage> {
     );
   }
 }
-
-

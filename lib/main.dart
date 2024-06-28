@@ -1,5 +1,6 @@
 import 'package:acute_test/screens/homepage.dart';
 import 'package:flutter/material.dart';
+import 'package:acute_test/data/globals.dart' as globals;
 
 void main() {
   runApp(const MyApp());
@@ -11,22 +12,20 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    globals.coins = 10000;
     return MaterialApp(
-    
       theme: ThemeData(
-       
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.brown),
         useMaterial3: true,
       ),
-    home: Homepage(),
-    debugShowCheckedModeBanner: false,
+      home: Homepage(),
+      debugShowCheckedModeBanner: false,
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
-
 
   final String title;
 
